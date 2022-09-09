@@ -4,19 +4,21 @@ package mermaid.kt.Sequence
 
 abstract class Component {
     val children = arrayListOf<Component>()
-    protected fun <T : Component> initComponent(component: T, init: T.() -> Unit): T {
-        component.init()
+    protected fun <T : Component> initComponent(component: T, trailingContent: T.() -> Unit): T {
+        component.trailingContent()
         children.add(component)
         return component
     }
-    protected fun toString(builder: StringBuilder) {}
+    protected fun toString(acc: StringBuilder) {}
 }
 
 /* ============ Labels ============ */
 
 abstract class Label() : Component() {
-    fun autonumber(init: Autonumber.() -> Unit) {}
-    fun participants(participants: List<Actor>, init: Participants.() -> Unit) {}
+    fun autonumber(trailingContent: Autonumber.() -> Unit) =
+            initComponent(Autonumber(), trailingContent)
+    fun participants(participants: List<Actor>, trailingContent: Participants.() -> Unit) =
+            initComponent(Participants(participants), trailingContent)
 }
 
 class Autonumber() : Label()
@@ -25,33 +27,29 @@ data class Participants(var participants: List<Actor>?) : Label()
 
 /* ============ Blocks ============ */
 abstract class Block() : Component() {
-    fun loop(label: String, followingContent: Loop.() -> Unit) =
-            initComponent(Loop(label), followingContent)
-    fun noteLeft(actor: Actor, note: String, followingContent: NoteLeft.() -> Unit) =
-            initComponent(NoteLeft(actor, note), followingContent)
-    fun noteRight(actor: Actor, note: String, followingContent: NoteRight.() -> Unit) =
-            initComponent(NoteRight(actor, note), followingContent)
-    fun noteOver(
-            actor1: Actor,
-            actor2: Actor,
-            note: String,
-            followingContent: NoteOver.() -> Unit
-    ) = initComponent(NoteOver(actor1, actor2, note), followingContent)
-    fun noteOver(actor: Actor, note: String, followingContent: NoteOver.() -> Unit) =
-            initComponent(NoteOver(actor, null, note), followingContent)
-    fun highlight(colorString: String, followingContent: Highlight.() -> Unit) =
-            initComponent(Highlight(Color.fromString(colorString)), followingContent)
-    fun alternative(clauses: List<Clause>, followingContent: Alternative.() -> Unit) =
-            initComponent(Alternative(clauses), followingContent)
-    fun parallel(description: String, followingContent: Parallel.() -> Unit) =
-            initComponent(Parallel(description), followingContent)
-    fun optional(description: String, followingContent: Optional.() -> Unit) =
-            initComponent(Optional(description), followingContent)
+    fun loop(label: String, trailingContent: Loop.() -> Unit) =
+            initComponent(Loop(label), trailingContent)
+    fun noteLeft(actor: Actor, note: String, trailingContent: NoteLeft.() -> Unit) =
+            initComponent(NoteLeft(actor, note), trailingContent)
+    fun noteRight(actor: Actor, note: String, trailingContent: NoteRight.() -> Unit) =
+            initComponent(NoteRight(actor, note), trailingContent)
+    fun noteOver(actor1: Actor, actor2: Actor, note: String, trailingContent: NoteOver.() -> Unit) =
+            initComponent(NoteOver(actor1, actor2, note), trailingContent)
+    fun noteOver(actor: Actor, note: String, trailingContent: NoteOver.() -> Unit) =
+            initComponent(NoteOver(actor, null, note), trailingContent)
+    fun highlight(colorString: String, trailingContent: Highlight.() -> Unit) =
+            initComponent(Highlight(Color.fromString(colorString)), trailingContent)
+    fun alternative(clauses: List<Clause>, trailingContent: Alternative.() -> Unit) =
+            initComponent(Alternative(clauses), trailingContent)
+    fun parallel(description: String, trailingContent: Parallel.() -> Unit) =
+            initComponent(Parallel(description), trailingContent)
+    fun optional(description: String, trailingContent: Optional.() -> Unit) =
+            initComponent(Optional(description), trailingContent)
 }
 
 data class Loop(var label: String?) : Block()
 
-data class NoteLeft(var actor: Actor?, var note: String? = null) : Block()
+data class NoteLeft(var actor: Actor?, var note: String?) : Block()
 
 data class NoteRight(var actor: Actor?, var not: String?) : Block()
 
@@ -68,47 +66,84 @@ data class Optional(var description: String?) : Block()
 /* ============ Calls ============ */
 
 abstract class Call() : Component() {
-    fun sync(init: CallSync.() -> Unit) {}
-    fun activate(init: CallActivate.() -> Unit) {}
-    fun cross(init: CallCross.() -> Unit) {}
-    fun async(init: CallAsync.() -> Unit) {}
+    fun sync(from: Actor, to: Actor, message: String, trailingContent: CallSync.() -> Unit) =
+            initComponent(CallSync(from, to, message), trailingContent)
+    fun activate(
+            from: Actor,
+            to: Actor,
+            message: String,
+            trailingContent: CallActivate.() -> Unit
+    ) = initComponent(CallActivate(from, to, message), trailingContent)
+    fun cross(from: Actor, to: Actor, message: String, trailingContent: CallCross.() -> Unit) =
+            initComponent(CallCross(from, to, message), trailingContent)
+    fun async(from: Actor, to: Actor, message: String, trailingContent: CallAsync.() -> Unit) =
+            initComponent(CallAsync(from, to, message), trailingContent)
 }
 
-class CallSync() : Call()
+class CallSync(var from: Actor?, var to: Actor?, var message: String?) : Call()
 
-class CallActivate() : Call()
+class CallActivate(var from: Actor?, var to: Actor?, var message: String?) : Call()
 
-class CallCross() : Call()
+class CallCross(var from: Actor?, var to: Actor?, var message: String?) : Call()
 
-class CallAsync() : Call()
+class CallAsync(var from: Actor?, var to: Actor?, var message: String?) : Call()
 
 /* ============ Replys ============ */
 
 abstract class Reply() : Component() {
-    fun sync(init: ReplySync.() -> Unit) {}
-    fun activate(init: ReplyActivate.() -> Unit) {}
-    fun cross(init: ReplyCross.() -> Unit) {}
-    fun async(init: ReplyAsync.() -> Unit) {}
+    fun sync(from: Actor, to: Actor, message: String, trailingContent: ReplySync.() -> Unit) =
+            initComponent(ReplySync(from, to, message), trailingContent)
+
+    fun activate(
+            from: Actor,
+            to: Actor,
+            message: String,
+            trailingContent: ReplyActivate.() -> Unit
+    ) = initComponent(ReplyActivate(from, to, message), trailingContent)
+
+    fun cross(from: Actor, to: Actor, message: String, trailingContent: ReplyCross.() -> Unit) =
+            initComponent(ReplyCross(from, to, message), trailingContent)
+
+    fun async(from: Actor, to: Actor, message: String, trailingContent: ReplyAsync.() -> Unit) =
+            initComponent(ReplyAsync(from, to, message), trailingContent)
 }
 
-class ReplySync() : Reply()
+class ReplySync(var from: Actor?, var to: Actor?, var message: String?) : Reply()
 
-class ReplyActivate() : Reply()
+class ReplyActivate(var from: Actor?, var to: Actor?, var message: String?) : Reply()
 
-class ReplyCross() : Reply()
+class ReplyCross(var from: Actor?, var to: Actor?, var message: String?) : Reply()
 
-class ReplyAsync() : Reply()
+class ReplyAsync(var from: Actor?, var to: Actor?, var message: String?) : Reply()
 
 /* ============ Back and Forths ============ */
 
 abstract class BackAndForth() : Component() {
-    fun sync(init: WithSync.() -> Unit) {}
-    fun async(init: WithAsync.() -> Unit) {}
+    fun sync(
+            from: Actor,
+            to: Actor,
+            messageFrom: String,
+            messageTo: String,
+            trailingContent: WithSync.() -> Unit
+    ) = initComponent(WithSync(from, to, messageFrom, messageTo), trailingContent)
+    fun async(
+            from: Actor,
+            to: Actor,
+            messageFrom: String,
+            messageTo: String,
+            trailingContent: WithAsync.() -> Unit
+    ) = initComponent(WithAsync(from, to, messageFrom, messageTo), trailingContent)
 }
 
-class WithSync() : BackAndForth()
+class WithSync(var from: Actor?, var to: Actor?, var messageFrom: String?, var messageTo: String?) :
+        BackAndForth()
 
-class WithAsync() : BackAndForth()
+class WithAsync(
+        var from: Actor?,
+        var to: Actor?,
+        var messageFrom: String?,
+        var messageTo: String?
+) : BackAndForth()
 
 /* ============ Sub-Component Constructs ============ */
 
