@@ -83,7 +83,6 @@ abstract class Call() : Component() {
             to: Actor,
             message: String,
             trailingContent: CallActivate.() -> Unit
-
     ) = initComponent(CallActivate(from, to, message), trailingContent)
     fun callCross(from: Actor, to: Actor, message: String, trailingContent: CallCross.() -> Unit) =
             initComponent(CallCross(from, to, message), trailingContent)
@@ -158,13 +157,8 @@ abstract class BackAndForth() : Component() {
             trailingContent: WithAsync.() -> Unit
     ) = initComponent(WithAsync(from, to, messageFrom, messageTo), trailingContent)
 
-    fun withAsync(
-            from: Actor,
-            to: Actor,
-            messageFrom: String,
-            messageTo: String,
-            trailingContent: WithAsync.() -> Unit
-    ) = initComponent(WithAsync(from, to, "calls", "replies"), trailingContent)
+    fun withAsync(from: Actor, to: Actor, trailingContent: WithAsync.() -> Unit) =
+            initComponent(WithAsync(from, to, "calls", "replies"), trailingContent)
 }
 
 class WithSync(var from: Actor?, var to: Actor?, var messageFrom: String?, var messageTo: String?) :
