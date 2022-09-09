@@ -9,7 +9,10 @@ abstract class Component {
         children.add(component)
         return component
     }
-    protected fun toString(acc: StringBuilder) {}
+
+    // abstract fun render(acc: StringBuilder)
+
+    // abstract fun toString(acc: StringBuilder)
 }
 
 /* ============ Labels ============ */
@@ -195,3 +198,28 @@ class Color(val r: Int, val g: Int, val b: Int, val a: Float) : SubComponent() {
         fun toString(color: Color): String = "rgb(${color.r}, ${color.g}, ${color.b}, ${color.a})"
     }
 }
+
+// val sample = sequenceDiagram {
+//     autonumber()
+//     participants("alice", "bob")
+//     alternative {
+//         ifClause("x=1") {
+//             callSync("alice", "bob", "hihi")
+//             replySync("bob", "alice", "hihi")
+//         }
+//         elseClause("x=2") {
+//             callSync("alice", "bob", "hihi")
+//             replySync("bob", "alice", "hihi")
+//         }
+//         elseClause("x=3") {
+//             callSync("alice", "bob", "hihi")
+//             replySync("bob", "alice", "hihi")
+//         }
+//     }
+//     highlight("red") {
+//         optional("this is optional") {
+//             callSync("alice", "bob", "hihi")
+//             replySync("bob", "alice", "hihi")
+//         }
+//     }
+// }
