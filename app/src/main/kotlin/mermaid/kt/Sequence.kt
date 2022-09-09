@@ -17,6 +17,7 @@ abstract class Component {
 abstract class Label() : Component() {
     fun autonumber(trailingContent: Autonumber.() -> Unit) =
             initComponent(Autonumber(), trailingContent)
+
     fun participants(participants: List<Actor>, trailingContent: Participants.() -> Unit) =
             initComponent(Participants(participants), trailingContent)
 }
@@ -29,20 +30,28 @@ data class Participants(var participants: List<Actor>?) : Label()
 abstract class Block() : Component() {
     fun loop(label: String, trailingContent: Loop.() -> Unit) =
             initComponent(Loop(label), trailingContent)
+
     fun noteLeft(actor: Actor, note: String, trailingContent: NoteLeft.() -> Unit) =
             initComponent(NoteLeft(actor, note), trailingContent)
+
     fun noteRight(actor: Actor, note: String, trailingContent: NoteRight.() -> Unit) =
             initComponent(NoteRight(actor, note), trailingContent)
+
     fun noteOver(actor1: Actor, actor2: Actor, note: String, trailingContent: NoteOver.() -> Unit) =
             initComponent(NoteOver(actor1, actor2, note), trailingContent)
+
     fun noteOver(actor: Actor, note: String, trailingContent: NoteOver.() -> Unit) =
             initComponent(NoteOver(actor, null, note), trailingContent)
+
     fun highlight(colorString: String, trailingContent: Highlight.() -> Unit) =
             initComponent(Highlight(Color.fromString(colorString)), trailingContent)
+
     fun alternative(clauses: List<Clause>, trailingContent: Alternative.() -> Unit) =
             initComponent(Alternative(clauses), trailingContent)
+
     fun parallel(description: String, trailingContent: Parallel.() -> Unit) =
             initComponent(Parallel(description), trailingContent)
+
     fun optional(description: String, trailingContent: Optional.() -> Unit) =
             initComponent(Optional(description), trailingContent)
 }
@@ -66,17 +75,20 @@ data class Optional(var description: String?) : Block()
 /* ============ Calls ============ */
 
 abstract class Call() : Component() {
-    fun sync(from: Actor, to: Actor, message: String, trailingContent: CallSync.() -> Unit) =
+    fun callSync(from: Actor, to: Actor, message: String, trailingContent: CallSync.() -> Unit) =
             initComponent(CallSync(from, to, message), trailingContent)
-    fun activate(
+
+    fun callActivate(
             from: Actor,
             to: Actor,
             message: String,
             trailingContent: CallActivate.() -> Unit
+
     ) = initComponent(CallActivate(from, to, message), trailingContent)
-    fun cross(from: Actor, to: Actor, message: String, trailingContent: CallCross.() -> Unit) =
+    fun callCross(from: Actor, to: Actor, message: String, trailingContent: CallCross.() -> Unit) =
             initComponent(CallCross(from, to, message), trailingContent)
-    fun async(from: Actor, to: Actor, message: String, trailingContent: CallAsync.() -> Unit) =
+
+    fun callAsync(from: Actor, to: Actor, message: String, trailingContent: CallAsync.() -> Unit) =
             initComponent(CallAsync(from, to, message), trailingContent)
 }
 
@@ -91,21 +103,29 @@ class CallAsync(var from: Actor?, var to: Actor?, var message: String?) : Call()
 /* ============ Replys ============ */
 
 abstract class Reply() : Component() {
-    fun sync(from: Actor, to: Actor, message: String, trailingContent: ReplySync.() -> Unit) =
+    fun replySync(from: Actor, to: Actor, message: String, trailingContent: ReplySync.() -> Unit) =
             initComponent(ReplySync(from, to, message), trailingContent)
 
-    fun activate(
+    fun replyActivate(
             from: Actor,
             to: Actor,
             message: String,
             trailingContent: ReplyActivate.() -> Unit
     ) = initComponent(ReplyActivate(from, to, message), trailingContent)
 
-    fun cross(from: Actor, to: Actor, message: String, trailingContent: ReplyCross.() -> Unit) =
-            initComponent(ReplyCross(from, to, message), trailingContent)
+    fun replyCross(
+            from: Actor,
+            to: Actor,
+            message: String,
+            trailingContent: ReplyCross.() -> Unit
+    ) = initComponent(ReplyCross(from, to, message), trailingContent)
 
-    fun async(from: Actor, to: Actor, message: String, trailingContent: ReplyAsync.() -> Unit) =
-            initComponent(ReplyAsync(from, to, message), trailingContent)
+    fun replyAsync(
+            from: Actor,
+            to: Actor,
+            message: String,
+            trailingContent: ReplyAsync.() -> Unit
+    ) = initComponent(ReplyAsync(from, to, message), trailingContent)
 }
 
 class ReplySync(var from: Actor?, var to: Actor?, var message: String?) : Reply()
@@ -119,20 +139,32 @@ class ReplyAsync(var from: Actor?, var to: Actor?, var message: String?) : Reply
 /* ============ Back and Forths ============ */
 
 abstract class BackAndForth() : Component() {
-    fun sync(
+    fun withSync(
             from: Actor,
             to: Actor,
             messageFrom: String,
             messageTo: String,
             trailingContent: WithSync.() -> Unit
     ) = initComponent(WithSync(from, to, messageFrom, messageTo), trailingContent)
-    fun async(
+
+    fun withSync(from: Actor, to: Actor, trailingContent: WithSync.() -> Unit) =
+            initComponent(WithSync(from, to, "calls", "replies"), trailingContent)
+
+    fun withAsync(
             from: Actor,
             to: Actor,
             messageFrom: String,
             messageTo: String,
             trailingContent: WithAsync.() -> Unit
     ) = initComponent(WithAsync(from, to, messageFrom, messageTo), trailingContent)
+
+    fun withAsync(
+            from: Actor,
+            to: Actor,
+            messageFrom: String,
+            messageTo: String,
+            trailingContent: WithAsync.() -> Unit
+    ) = initComponent(WithAsync(from, to, "calls", "replies"), trailingContent)
 }
 
 class WithSync(var from: Actor?, var to: Actor?, var messageFrom: String?, var messageTo: String?) :
