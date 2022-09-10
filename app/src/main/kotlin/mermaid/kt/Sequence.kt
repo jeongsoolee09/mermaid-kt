@@ -149,11 +149,14 @@ data class NoteOver(var actor1: Actor?, var actor2: Actor?, var note: String?) :
 data class Highlight(var color: Color?) : Block()
 
 class Alternative(var condition: String?) : Block() {
-    fun andClause(condition: String?, thenWhat: AndClause.() -> Unit) =
-            initComponent(AndClause(condition), thenWhat)
+    fun elseClause(condition: String?, thenWhat: ElseClause.() -> Unit) =
+            initComponent(ElseClause(condition), thenWhat)
 }
 
-data class Parallel(var description: String?) : Block()
+class Parallel(var description: String?) : Block() {
+    fun andClause(condition: String?, thenWhat: AndClause.() -> Unit) =
+        initComponent(AndClause(condition), thenWhat)
+}
 
 data class Optional(var description: String?) : Block()
 
