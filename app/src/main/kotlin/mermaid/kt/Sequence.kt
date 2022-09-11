@@ -2,13 +2,23 @@ package mermaid.kt.Sequence
 
 /* ============ Components ============ */
 
-interface Component
+interface Component {
+    fun render(builder: StringBuilder, indent: String)
+    fun <T : Component> initComponent(component: T, thenWhat: T.() -> Unit): T
+}
 
 /* =================================== */
 /* ============ Base Case ============ */
 /* =================================== */
 
-abstract class Base : Component
+abstract class Base : Component {
+    override fun render(builder: StringBuilder, indent:String) : Unit {
+        when(this) {
+
+        }
+    }
+    override fun <T : Component> initComponent(component: T, thenWhat:T.() -> Unit) = component
+}
 
 // ============ Sub-Component Constructs ============
 
@@ -97,15 +107,18 @@ class ReplyAsync(var from: Actor?, var to: Actor?, var message: String?) : Reply
 
 abstract class Inductive : Component {
     val children = arrayListOf<Inductive>()
-    protected fun <T : Inductive> initComponent(component: T, thenWhat: T.() -> Unit): T {
+    override fun render(builder: StringBuilder, indent: String) {
+        when (this) {}
+    }
+    override fun <T : Component> initComponent(component: T, thenWhat: T.() -> Unit): T {
         component.thenWhat()
-        children.add(component)
+        if (component is Inductive) {
+            children.add(component)
+        } else {
+            throw IllegalArgumentException("WTF")
+        }
         return component
     }
-
-    // abstract fun render(acc: StringBuilder)
-
-    // abstract fun toString(acc: StringBuilder)
 }
 
 // ============ Blocks ============
@@ -142,7 +155,7 @@ data class Loop(var label: String?) : Block()
 
 data class NoteLeft(var actor: Actor?, var note: String?) : Block()
 
-data class NoteRight(var actor: Actor?, var not: String?) : Block()
+data class NoteRight(var actor: Actor?, var note: String?) : Block()
 
 data class NoteOver(var actor1: Actor?, var actor2: Actor?, var note: String?) : Block()
 
@@ -155,7 +168,7 @@ class Alternative(var condition: String?) : Block() {
 
 class Parallel(var description: String?) : Block() {
     fun andClause(condition: String?, thenWhat: AndClause.() -> Unit) =
-        initComponent(AndClause(condition), thenWhat)
+            initComponent(AndClause(condition), thenWhat)
 }
 
 data class Optional(var description: String?) : Block()
