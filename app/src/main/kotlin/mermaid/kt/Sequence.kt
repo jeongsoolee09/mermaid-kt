@@ -12,12 +12,10 @@ interface Component {
 /* =================================== */
 
 abstract class Base : Component {
-    override fun render(builder: StringBuilder, indent:String) : Unit {
-        when(this) {
-
-        }
+    override fun render(builder: StringBuilder, indent: String): Unit {
+        when (this) {}
     }
-    override fun <T : Component> initComponent(component: T, thenWhat:T.() -> Unit) = component
+    override fun <T : Component> initComponent(component: T, thenWhat: T.() -> Unit) = component
 }
 
 // ============ Sub-Component Constructs ============
@@ -220,6 +218,7 @@ data class AndClause(var condition: String?) : Clause()
 // val sample = sequenceDiagram {
 //     autonumber()
 //     participants("alice", "bob", "john")
+//
 //     alternative("x=0") {
 //         callSync("alice", "bob", "hihi")
 //         replySync("bob", "alice", "hihi")
@@ -236,21 +235,22 @@ data class AndClause(var condition: String?) : Clause()
 //             replySync("bob", "alice", "hihi")
 //         }
 //     }
-
+//
 //     callSync("alice", "bob", "hihi")
 //     noteOver("alice", "alice says hihi")
 //     callSync("bob", "john", "hoho")
 //     noteOver("bob", "john", "bob says hoho")
-
+//
 //     parallel("Alice to Bob") {
-//         andClause("Alice to Bob") {
-//             callSync("alice", "bob", "hihi")
+//         callSync("alice", "bob", "hihi")
+//         andClause("Bob to John") {
+//             callSync("bob", "john", "hihi")
 //         }
 //         andClause("Alice to John") {
 //             callSync("alice", "john", "hihi")
 //         }
 //     }
-
+//
 //     highlight("red") {
 //         optional("this is optional") {
 //             callSync("alice", "bob", "hihi")
