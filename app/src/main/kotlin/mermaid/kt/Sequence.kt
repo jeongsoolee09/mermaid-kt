@@ -4,17 +4,14 @@ class Unreachable() : Exception()
 
 /* ============ Components ============ */
 
-interface Component {
-    fun <T : Component> initComponent(component: T, thenWhat: T.() -> Unit): T
-}
+interface Component
+
 
 /* =================================== */
 /* ============ Base Case ============ */
 /* =================================== */
 
-abstract class Base : Component {
-    override fun <T : Component> initComponent(component: T, thenWhat: T.() -> Unit) = TODO()
-}
+abstract class Base : Component
 
 // ============ Sub-Component Constructs ============
 
@@ -103,6 +100,7 @@ class SolidLine(var from: Actor?, var to: Actor?, var message: String?,
             }
 }
 
+
 class SolidArrow(var from: Actor?, var to: Actor?, var message: String?,
                  val activate: Boolean = false, val deactivate: Boolean = false): Solid() {
     override fun toString() : String =
@@ -170,7 +168,7 @@ class DottedLine(var from: Actor?, var to: Actor?, var message: String?,
             Pair(true, true)   ->
                 throw IllegalArgumentException("Cannot be both activate and deactivate receiver at the same time")
             else -> throw Unreachable()
-            }
+        }
 }
 
 
@@ -184,7 +182,7 @@ class DottedArrow(var from: Actor?, var to: Actor?, var message: String?,
             Pair(true, true)   ->
                 throw IllegalArgumentException("Cannot be both activate and deactivate receiver at the same time")
             else -> throw Unreachable()
-            }
+        }
 }
 
 
@@ -198,7 +196,7 @@ class DottedCross(var from: Actor?, var to: Actor?, var message: String?,
             Pair(true, true)   ->
                 throw IllegalArgumentException("Cannot be both activate and deactivate receiver at the same time")
             else -> throw Unreachable()
-            }
+        }
 }
 
 
@@ -212,7 +210,7 @@ class DottedOpen(var from: Actor?, var to: Actor?, var message: String?,
             Pair(true, true)   ->
                 throw IllegalArgumentException("Cannot be both activate and deactivate receiver at the same time")
             else -> throw Unreachable()
-            }
+        }
 }
 
 class NoteLeft(var actor: Actor?, var note: String?) : Block() {
@@ -224,9 +222,9 @@ class NoteRight(var actor: Actor?, var note: String?) : Block() {
 }
 
 class NoteOver(var actor1: Actor?, var actor2: Actor?, var note: String?) : Block() {
-    override fun toString() = "Note over ${actor1},${actor2}: $note" ?: "Note over ${actor1}: $note"
+    override fun toString() =
+        if (this.actor2 != null) "Note over ${actor1},${actor2}: $note" else "Note over ${actor1}: $note"
 }
-
 
 /* ======================================== */
 /* ============ Inductive Case ============ */
@@ -235,11 +233,9 @@ class NoteOver(var actor1: Actor?, var actor2: Actor?, var note: String?) : Bloc
 abstract class Inductive : Component {
     val children = arrayListOf<Inductive>()
 
-    override fun <T : Component> initComponent(component: T, thenWhat: T.() -> Unit): T {
+    fun <T : Inductive> init(component: T, thenWhat: T.() -> Unit): T {
         component.thenWhat()
-        if (component is Inductive) {
-            children.add(component)
-        }
+        children.add(component)
         return component
     }
 }
@@ -247,31 +243,31 @@ abstract class Inductive : Component {
 // ============ Blocks ============
 
 abstract class Block() : Inductive() {
-    fun loop(label: String, thenWhat: Loop.() -> Unit) = initComponent(Loop(label), thenWhat)
+    fun loop(label: String, thenWhat: Loop.() -> Unit) = init(Loop(label), thenWhat)
 
     fun noteLeft(actor: Actor, note: String, thenWhat: NoteLeft.() -> Unit) =
-        initComponent(NoteLeft(actor, note), thenWhat)
+        init(NoteLeft(actor, note), thenWhat)
 
     fun noteRight(actor: Actor, note: String, thenWhat: NoteRight.() -> Unit) =
-        initComponent(NoteRight(actor, note), thenWhat)
+        init(NoteRight(actor, note), thenWhat)
 
     fun noteOver(actor1: Actor, actor2: Actor, note: String, thenWhat: NoteOver.() -> Unit) =
-        initComponent(NoteOver(actor1, actor2, note), thenWhat)
+        init(NoteOver(actor1, actor2, note), thenWhat)
 
     fun noteOver(actor: Actor, note: String, thenWhat: NoteOver.() -> Unit) =
-        initComponent(NoteOver(actor, null, note), thenWhat)
+        init(NoteOver(actor, null, note), thenWhat)
 
     fun highlight(colorString: String, thenWhat: Highlight.() -> Unit) =
-        initComponent(Highlight(Color.fromString(colorString)), thenWhat)
+        init(Highlight(Color.fromString(colorString)), thenWhat)
 
     fun alternative(condition: String, thenWhat: Alternative.() -> Unit) =
-        initComponent(Alternative(condition), thenWhat)
+        init(Alternative(condition), thenWhat)
 
     fun parallel(description: String, thenWhat: Parallel.() -> Unit) =
-        initComponent(Parallel(description), thenWhat)
+        init(Parallel(description), thenWhat)
 
     fun optional(description: String, thenWhat: Optional.() -> Unit) =
-        initComponent(Optional(description), thenWhat)
+        init(Optional(description), thenWhat)
 }
 
 class Loop(var label: String?) : Block() {
@@ -284,19 +280,21 @@ class Highlight(var color: Color?) : Block() {
 
 class Alternative(var condition: String?) : Block() {
     fun elseClause(condition: String?, thenWhat: ElseClause.() -> Unit) =
-        initComponent(ElseClause(condition), thenWhat)
+        init(ElseClause(condition), thenWhat)
 
     override fun toString() = TODO()
 }
 
 class Parallel(var description: String?) : Block() {
     fun andClause(condition: String?, thenWhat: AndClause.() -> Unit) =
-        initComponent(AndClause(condition), thenWhat)
+        init(AndClause(condition), thenWhat)
 
     override fun toString() = TODO()
 }
 
-data class Optional(var description: String?) : Block()
+class Optional(var description: String?) : Block() {
+    override fun toString() = TODO()
+}
 
 // ============ Clauses ============
 
