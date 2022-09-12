@@ -89,9 +89,9 @@ class SolidArrow(var from: Actor?, var to: Actor?, var message: String?,
                  val activate: Boolean = false, val deactivate: Boolean = false): Solid() {
     override fun toString() : String =
         when(Pair(this.activate, this.deactivate)) {
-            Pair(false, false) -> "${this.from}-->${this.to}: ${this.message}"
-            Pair(true, false)  -> "${this.from}-->+${this.to}: ${this.message}"
-            Pair(false, true)  -> "${this.from}-->-${this.to}: ${this.message}"
+            Pair(false, false) -> "${this.from}->>${this.to}: ${this.message}"
+            Pair(true, false)  -> "${this.from}->>+${this.to}: ${this.message}"
+            Pair(false, true)  -> "${this.from}->>-${this.to}: ${this.message}"
             Pair(true, true)   ->
                 throw IllegalArgumentException("Cannot be both activate and deactivate receiver at the same time")
             else -> throw Unreachable()
@@ -143,16 +143,60 @@ abstract class Dotted() : Arrow() {
 }
 
 class DottedLine(var from: Actor?, var to: Actor?, var message: String?,
-                 val activate: Boolean = false, val deactivate: Boolean = false): Dotted()
+                 val activate: Boolean = false, val deactivate: Boolean = false): Dotted() {
+    override fun toString() : String =
+        when(Pair(this.activate, this.deactivate)) {
+            Pair(false, false) -> "${this.from}-->${this.to}: ${this.message}"
+            Pair(true, false)  -> "${this.from}-->+${this.to}: ${this.message}"
+            Pair(false, true)  -> "${this.from}-->-${this.to}: ${this.message}"
+            Pair(true, true)   ->
+                throw IllegalArgumentException("Cannot be both activate and deactivate receiver at the same time")
+            else -> throw Unreachable()
+            }
+}
+
 
 class DottedArrow(var from: Actor?, var to: Actor?, var message: String?,
-                  val activate: Boolean = false, val deactivate: Boolean = false): Dotted()
+                  val activate: Boolean = false, val deactivate: Boolean = false): Dotted() {
+    override fun toString() : String =
+        when(Pair(this.activate, this.deactivate)) {
+            Pair(false, false) -> "${this.from}-->>${this.to}: ${this.message}"
+            Pair(true, false)  -> "${this.from}-->>+${this.to}: ${this.message}"
+            Pair(false, true)  -> "${this.from}-->>-${this.to}: ${this.message}"
+            Pair(true, true)   ->
+                throw IllegalArgumentException("Cannot be both activate and deactivate receiver at the same time")
+            else -> throw Unreachable()
+            }
+}
+
 
 class DottedCross(var from: Actor?, var to: Actor?, var message: String?,
-                  val activate: Boolean = false, val deactivate: Boolean = false): Dotted()
+                  val activate: Boolean = false, val deactivate: Boolean = false): Dotted() {
+    override fun toString() : String =
+        when(Pair(this.activate, this.deactivate)) {
+            Pair(false, false) -> "${this.from}--x${this.to}: ${this.message}"
+            Pair(true, false)  -> "${this.from}--x+${this.to}: ${this.message}"
+            Pair(false, true)  -> "${this.from}--x-${this.to}: ${this.message}"
+            Pair(true, true)   ->
+                throw IllegalArgumentException("Cannot be both activate and deactivate receiver at the same time")
+            else -> throw Unreachable()
+            }
+}
+
 
 class DottedOpen(var from: Actor?, var to: Actor?, var message: String?,
-                 val activate: Boolean = false, val deactivate: Boolean = false): Dotted()
+                 val activate: Boolean = false, val deactivate: Boolean = false): Dotted() {
+    override fun toString() : String =
+        when(Pair(this.activate, this.deactivate)) {
+            Pair(false, false) -> "${this.from}--)${this.to}: ${this.message}"
+            Pair(true, false)  -> "${this.from}--)+${this.to}: ${this.message}"
+            Pair(false, true)  -> "${this.from}--)-${this.to}: ${this.message}"
+            Pair(true, true)   ->
+                throw IllegalArgumentException("Cannot be both activate and deactivate receiver at the same time")
+            else -> throw Unreachable()
+            }
+}
+
 
 /* ======================================== */
 /* ============ Inductive Case ============ */
