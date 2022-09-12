@@ -5,7 +5,6 @@ class Unreachable() : Exception()
 /* ============ Components ============ */
 
 interface Component {
-    fun render(builder: StringBuilder, indent: String)
     fun <T : Component> initComponent(component: T, thenWhat: T.() -> Unit): T
 }
 
@@ -14,14 +13,12 @@ interface Component {
 /* =================================== */
 
 abstract class Base : Component {
-    override fun render(builder: StringBuilder, indent: String): Unit {
-    }
-    override fun <T : Component> initComponent(component: T, thenWhat: T.() -> Unit) = component
+    override fun <T : Component> initComponent(component: T, thenWhat: T.() -> Unit) = TODO()
 }
 
 // ============ Sub-Component Constructs ============
 
-    abstract class SubComponent : Base()
+abstract class SubComponent : Base()
 
 data class Actor(val name: String) : SubComponent()
 
@@ -44,15 +41,32 @@ class Color(val r: Int, val g: Int, val b: Int, val a: Float) : SubComponent() {
 
 // ============ Labels ============
 
-    abstract class Label() : Base() {
-        fun autonumber() = Autonumber()
+abstract class Label() : Base() {
+    fun autonumber() = Autonumber()
 
-        fun participants(participants: List<Actor>) = Participants(participants)
-    }
+    fun participants(participants: List<Actor>) = Participants(participants)
 
-class Autonumber() : Label()
+    fun activate(actor: Actor) = Activate(actor)
 
-data class Participants(var participants: List<Actor>?) : Label()
+    fun deactivate(actor: Actor) = Deactivate(actor)
+}
+
+class Autonumber() : Label() {
+    override fun toString(): String = "autonumber"
+}
+
+class Participants(var participants: List<Actor>?) : Label() {
+    override fun toString(): String =
+        participants!!.joinToString(prefix="participants ", separator=", ")
+}
+
+class Activate(var actor: Actor?) : Label() {
+    override fun toString(): String = "activate " + actor.toString()
+}
+
+class Deactivate(var actor: Actor?) : Label() {
+    override fun toString(): String = "deactivate " + actor.toString()
+}
 
 // ============ Calls ============
 
@@ -60,16 +74,20 @@ abstract class Arrow() : Base()
 
 abstract class Solid() : Arrow() {
     fun line(from: Actor, to: Actor, message: String,
-             activate: Boolean = false, deactivate: Boolean = false) = SolidLine(from, to, message, activate, deactivate)
+             activate: Boolean = false, deactivate: Boolean = false) =
+        SolidLine(from, to, message, activate, deactivate)
 
     fun arrow(from: Actor, to: Actor, message: String,
-              activate: Boolean = false, deactivate: Boolean = false) = SolidArrow(from, to, message, activate, deactivate)
+              activate: Boolean = false, deactivate: Boolean = false) =
+        SolidArrow(from, to, message, activate, deactivate)
 
     fun cross(from: Actor, to: Actor, message: String,
-              activate: Boolean = false, deactivate: Boolean = false) = SolidCross(from, to, message, activate, deactivate)
+              activate: Boolean = false, deactivate: Boolean = false) =
+        SolidCross(from, to, message, activate, deactivate)
 
     fun openArrow(from: Actor, to: Actor, message: String,
-                  activate: Boolean = false, deactivate: Boolean = false) = SolidOpen(from, to, message, activate, deactivate)
+                  activate: Boolean = false, deactivate: Boolean = false) =
+        SolidOpen(from, to, message, activate, deactivate)
 }
 
 class SolidLine(var from: Actor?, var to: Actor?, var message: String?,
@@ -197,6 +215,18 @@ class DottedOpen(var from: Actor?, var to: Actor?, var message: String?,
             }
 }
 
+class NoteLeft(var actor: Actor?, var note: String?) : Block() {
+    override fun toString() = "Note left of ${this.actor}"
+}
+
+class NoteRight(var actor: Actor?, var note: String?) : Block() {
+    override fun toString() = "Note right of ${this.actor}"
+}
+
+class NoteOver(var actor1: Actor?, var actor2: Actor?, var note: String?) : Block() {
+    override fun toString() = "Note over ${actor1},${actor2}: $note" ?: "Note over ${actor1}: $note"
+}
+
 
 /* ======================================== */
 /* ============ Inductive Case ============ */
@@ -204,15 +234,11 @@ class DottedOpen(var from: Actor?, var to: Actor?, var message: String?,
 
 abstract class Inductive : Component {
     val children = arrayListOf<Inductive>()
-    override fun render(builder: StringBuilder, indent: String) {
-        when (this) {}
-    }
+
     override fun <T : Component> initComponent(component: T, thenWhat: T.() -> Unit): T {
         component.thenWhat()
         if (component is Inductive) {
             children.add(component)
-        } else {
-            throw IllegalArgumentException("WTF")
         }
         return component
     }
@@ -248,35 +274,41 @@ abstract class Block() : Inductive() {
         initComponent(Optional(description), thenWhat)
 }
 
-data class Loop(var label: String?) : Block()
+class Loop(var label: String?) : Block() {
+    override fun toString() = TODO()
+}
 
-data class NoteLeft(var actor: Actor?, var note: String?) : Block()
-
-data class NoteRight(var actor: Actor?, var note: String?) : Block()
-
-data class NoteOver(var actor1: Actor?, var actor2: Actor?, var note: String?) : Block()
-
-data class Highlight(var color: Color?) : Block()
+class Highlight(var color: Color?) : Block() {
+    override fun toString() = TODO()
+}
 
 class Alternative(var condition: String?) : Block() {
     fun elseClause(condition: String?, thenWhat: ElseClause.() -> Unit) =
         initComponent(ElseClause(condition), thenWhat)
+
+    override fun toString() = TODO()
 }
 
 class Parallel(var description: String?) : Block() {
     fun andClause(condition: String?, thenWhat: AndClause.() -> Unit) =
         initComponent(AndClause(condition), thenWhat)
+
+    override fun toString() = TODO()
 }
 
 data class Optional(var description: String?) : Block()
 
 // ============ Clauses ============
 
-    abstract class Clause() : Inductive()
+abstract class Clause() : Inductive()
 
-data class ElseClause(var condition: String?) : Clause()
+class ElseClause(var condition: String?) : Clause() {
+    override fun toString() = TODO()
+}
 
-data class AndClause(var condition: String?) : Clause()
+class AndClause(var condition: String?) : Clause() {
+    override fun toString() = TODO()
+}
 
 // val sample = sequenceDiagram {
     //     autonumber()
@@ -321,3 +353,5 @@ data class AndClause(var condition: String?) : Clause()
                                         //         }
                                         //     }
                                         // }
+
+fun sequenceDiagram(diagram: Component): String = TODO()
