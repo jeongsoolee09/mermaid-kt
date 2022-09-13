@@ -73,7 +73,7 @@ class Deactivate(var actor: Actor?) : Label() {
 
 abstract class Arrow() : Base()
 
-abstract class Solid() : Arrow() 
+abstract class Solid() : Arrow()
 
 class SolidLine(var from: Actor?, var to: Actor?, var message: String?,
                 val activate: Boolean = false, val deactivate: Boolean = false): Solid() {
