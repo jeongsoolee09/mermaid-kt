@@ -189,18 +189,18 @@ abstract class Note() : Base()
 
 class NoteLeft(var actor: Actor?, var note: String?) : Block() {
     override fun render(acc: StringBuilder) : StringBuilder =
-        acc.append("Note left of ${this.actor}")
+        acc.append("Note left of ${this.actor}: ${this.note}")
 }
 
 class NoteRight(var actor: Actor?, var note: String?) : Block() {
     override fun render(acc: StringBuilder) : StringBuilder =
-        acc.append("Note right of ${this.actor}")
+        acc.append("Note right of ${this.actor}: ${this.note}")
 }
 
 class NoteOver(var actor1: Actor?, var actor2: Actor?, var note: String?) : Block() {
     override fun render(acc: StringBuilder) : StringBuilder =
-        acc.append(if (this.actor2 != null) "Note over ${actor1},${actor2}: $note"
-                   else "Note over ${actor1}: $note")
+        acc.append(if (this.actor2 != null) "Note over ${this.actor1},${this.actor2}: $note"
+                   else "Note over ${this.actor1}: ${this.note}")
 }
 
 /* ======================================== */
@@ -210,7 +210,14 @@ class NoteOver(var actor1: Actor?, var actor2: Actor?, var note: String?) : Bloc
 abstract class Inductive : Component {
     val children = arrayListOf<Component>()
 
-    fun <T : Inductive> initInductive(component: T, thenWhat: T.() -> Unit): T {
+    // For Base Components
+    fun <T : Component> initComponent(component: T): T {
+        children.add(component)
+        return component
+    }
+
+    // For Inductive Components
+    fun <T : Component> initComponent(component: T, thenWhat: T.() -> Unit): T {
         component.thenWhat()
         children.add(component)
         return component
@@ -220,85 +227,89 @@ abstract class Inductive : Component {
 
     // Labels ============
 
-    fun autonumber() = Autonumber()
+    fun autonumber() =
+        initComponent(Autonumber())
 
-    fun participants(participants: List<Actor>) = Participants(participants)
+    fun participants(participants: List<Actor>) =
+        initComponent(Participants(participants))
 
-    fun activate(actor: Actor) = Activate(actor)
+    fun activate(actor: Actor) =
+        initComponent(Activate(actor))
 
-    fun deactivate(actor: Actor) = Deactivate(actor)
+    fun deactivate(actor: Actor) =
+        initComponent(Deactivate(actor))
 
     // Solid Arrows ============
 
     fun solidLine(from: Actor, to: Actor, message: String,
                  activate: Boolean = false, deactivate: Boolean = false) =
-        SolidLine(from, to, message, activate, deactivate)
+        initComponent(SolidLine(from, to, message, activate, deactivate))
 
     fun solidArrow(from: Actor, to: Actor, message: String,
               activate: Boolean = false, deactivate: Boolean = false) =
-        SolidArrow(from, to, message, activate, deactivate)
+        initComponent(SolidArrow(from, to, message, activate, deactivate))
 
     fun solidCross(from: Actor, to: Actor, message: String,
               activate: Boolean = false, deactivate: Boolean = false) =
-        SolidCross(from, to, message, activate, deactivate)
+        initComponent(SolidCross(from, to, message, activate, deactivate))
 
     fun solidOpen(from: Actor, to: Actor, message: String,
                   activate: Boolean = false, deactivate: Boolean = false) =
-        SolidOpen(from, to, message, activate, deactivate)
+        initComponent(SolidOpen(from, to, message, activate, deactivate))
 
     // Dotted Arrows ============
 
     fun dottedLine(from: Actor, to: Actor, message: String,
                  activate: Boolean = false, deactivate: Boolean = false) =
-        DottedLine(from, to, message, activate, deactivate)
+        initComponent(DottedLine(from, to, message, activate, deactivate))
 
     fun dottedArrow(from: Actor, to: Actor, message: String,
               activate: Boolean = false, deactivate: Boolean = false) =
-        DottedArrow(from, to, message, activate, deactivate)
+        initComponent(DottedArrow(from, to, message, activate, deactivate))
 
     fun dottedCross(from: Actor, to: Actor, message: String,
               activate: Boolean = false, deactivate: Boolean = false) =
-        DottedCross(from, to, message, activate, deactivate)
+        initComponent(DottedCross(from, to, message, activate, deactivate))
 
     fun dottedOpen(from: Actor, to: Actor, message: String,
                   activate: Boolean = false, deactivate: Boolean = false) =
-        DottedOpen(from, to, message, activate, deactivate)
+        initComponent(DottedOpen(from, to, message, activate, deactivate))
 
     // Notes ============
 
     fun noteLeft(actor: Actor, note: String) =
-        NoteLeft(actor, note)
+        initComponent(NoteLeft(actor, note))
 
     fun noteRight(actor: Actor, note: String) =
-        NoteRight(actor, note)
+        initComponent(NoteRight(actor, note))
 
     fun noteOver(actor1: Actor, actor2: Actor, note: String) =
-        NoteOver(actor1, actor2, note)
+        initComponent(NoteOver(actor1, actor2, note))
 
     fun noteOver(actor: Actor, note: String) =
-        NoteOver(actor, null, note)
+        initComponent(NoteOver(actor, null, note))
 
     // Blocks ============
 
     fun loop(label: String, thenWhat: Loop.() -> Unit) =
-        initInductive(Loop(label), thenWhat)
+        initComponent(Loop(label), thenWhat)
 
     fun highlight(colorString: String, thenWhat: Rect.() -> Unit) =
-        initInductive(Rect(Color.fromString(colorString)), thenWhat)
+        initComponent(Rect(Color.fromString(colorString)), thenWhat)
 
     fun alternative(condition: String, thenWhat: Alternative.() -> Unit) =
-        initInductive(Alternative(condition), thenWhat)
+        initComponent(Alternative(condition), thenWhat)
 
     fun parallel(description: String, thenWhat: Parallel.() -> Unit) =
-        initInductive(Parallel(description), thenWhat)
+        initComponent(Parallel(description), thenWhat)
 
     fun optional(description: String, thenWhat: Optional.() -> Unit) =
-        initInductive(Optional(description), thenWhat)
+        initComponent(Optional(description), thenWhat)
 }
 
 // ============ Blocks ============
 
-abstract class Block() : Inductive() 
+abstract class Block() : Inductive()
 
 class Loop(var label: String?) : Block() {
     override fun render(acc: StringBuilder) : StringBuilder {
@@ -330,7 +341,7 @@ class Rect(var color: Color?) : Block() {
 
 class Alternative(var condition: String?) : Block() {
     fun elseClause(condition: String?, thenWhat: ElseClause.() -> Unit) =
-        initInductive(ElseClause(condition), thenWhat)
+        initComponent(ElseClause(condition), thenWhat)
 
     override fun render(acc: StringBuilder) : StringBuilder {
         acc.append("alt ")
@@ -347,7 +358,7 @@ class Alternative(var condition: String?) : Block() {
 
 class Parallel(var description: String?) : Block() {
     fun andClause(condition: String?, thenWhat: AndClause.() -> Unit) =
-        initInductive(AndClause(condition), thenWhat)
+        initComponent(AndClause(condition), thenWhat)
 
     override fun render(acc: StringBuilder) : StringBuilder {
         acc.append("parallel ")
@@ -422,13 +433,15 @@ class SequenceDiagram() : Inductive() {
         }
         return acc
     }
+
+    fun initSequenceDiagram(thenWhat: SequenceDiagram.() -> Unit) =
+        initComponent(SequenceDiagram(), thenWhat)
 }
 
-fun sequenceDiagram(thenWhat: SequenceDiagram.() -> Unit): String {
-    val sequenceDiagram = SequenceDiagram()
-    val sequenceDiagram =
-        sequenceDiagram.initInductive(thenWhat)
+fun sequenceDiagram(thenWhat: SequenceDiagram.() -> Unit) : String {
     val builder = StringBuilder()
-    sequenceDiagram.render(builder)
+    val diagram = SequenceDiagram().initSequenceDiagram(thenWhat)
+    println(diagram.children)
+    diagram.render(builder)
     return builder.toString()
 }
