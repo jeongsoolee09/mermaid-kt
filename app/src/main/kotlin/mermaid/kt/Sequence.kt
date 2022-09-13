@@ -47,15 +47,7 @@ class Color(val r: Int, val g: Int, val b: Int, val a: Float) : SubComponent() {
 
 // ============ Labels ============
 
-abstract class Label() : Base() {
-    fun autonumber() = Autonumber()
-
-    fun participants(participants: List<Actor>) = Participants(participants)
-
-    fun activate(actor: Actor) = Activate(actor)
-
-    fun deactivate(actor: Actor) = Deactivate(actor)
-}
+abstract class Label() : Base()
 
 class Autonumber() : Label() {
     override fun render(acc: StringBuilder): StringBuilder =
@@ -77,27 +69,11 @@ class Deactivate(var actor: Actor?) : Label() {
         acc.append("deactivate " + actor.toString())
 }
 
-// ============ Calls ============
+// ============ Arrows ============
 
 abstract class Arrow() : Base()
 
-abstract class Solid() : Arrow() {
-    fun line(from: Actor, to: Actor, message: String,
-             activate: Boolean = false, deactivate: Boolean = false) =
-        SolidLine(from, to, message, activate, deactivate)
-
-    fun arrow(from: Actor, to: Actor, message: String,
-              activate: Boolean = false, deactivate: Boolean = false) =
-        SolidArrow(from, to, message, activate, deactivate)
-
-    fun cross(from: Actor, to: Actor, message: String,
-              activate: Boolean = false, deactivate: Boolean = false) =
-        SolidCross(from, to, message, activate, deactivate)
-
-    fun openArrow(from: Actor, to: Actor, message: String,
-                  activate: Boolean = false, deactivate: Boolean = false) =
-        SolidOpen(from, to, message, activate, deactivate)
-}
+abstract class Solid() : Arrow() 
 
 class SolidLine(var from: Actor?, var to: Actor?, var message: String?,
                 val activate: Boolean = false, val deactivate: Boolean = false): Solid() {
@@ -152,23 +128,7 @@ class SolidOpen(var from: Actor?, var to: Actor?, var message: String?,
             }
 }
 
-abstract class Dotted() : Arrow() {
-    fun line(from: Actor, to: Actor, message: String,
-             activate: Boolean = false, deactivate: Boolean = false) =
-        DottedLine(from, to, message, activate, deactivate)
-
-    fun arrow(from: Actor, to: Actor, message: String,
-              activate: Boolean = false, deactivate: Boolean = false) =
-        DottedArrow(from, to, message, activate, deactivate)
-
-    fun cross(from: Actor, to: Actor, message: String,
-              activate: Boolean = false, deactivate: Boolean = false) =
-        DottedCross(from, to, message, activate, deactivate)
-
-    fun openArrow(from: Actor, to: Actor, message: String,
-                  activate: Boolean = false, deactivate: Boolean = false) =
-        DottedOpen(from, to, message, activate, deactivate)
-}
+abstract class Dotted() : Arrow()
 
 class DottedLine(var from: Actor?, var to: Actor?, var message: String?,
                  val activate: Boolean = false, val deactivate: Boolean = false): Dotted() {
@@ -225,6 +185,8 @@ class DottedOpen(var from: Actor?, var to: Actor?, var message: String?,
         }
 }
 
+abstract class Note() : Base()
+
 class NoteLeft(var actor: Actor?, var note: String?) : Block() {
     override fun render(acc: StringBuilder) : StringBuilder =
         acc.append("Note left of ${this.actor}")
@@ -248,42 +210,95 @@ class NoteOver(var actor1: Actor?, var actor2: Actor?, var note: String?) : Bloc
 abstract class Inductive : Component {
     val children = arrayListOf<Component>()
 
-    fun <T : Inductive> init(component: T, thenWhat: T.() -> Unit): T {
+    fun <T : Inductive> initInductive(component: T, thenWhat: T.() -> Unit): T {
         component.thenWhat()
         children.add(component)
         return component
     }
+
+    /* Builder Methods */
+
+    // Labels ============
+
+    fun autonumber() = Autonumber()
+
+    fun participants(participants: List<Actor>) = Participants(participants)
+
+    fun activate(actor: Actor) = Activate(actor)
+
+    fun deactivate(actor: Actor) = Deactivate(actor)
+
+    // Solid Arrows ============
+
+    fun solidLine(from: Actor, to: Actor, message: String,
+                 activate: Boolean = false, deactivate: Boolean = false) =
+        SolidLine(from, to, message, activate, deactivate)
+
+    fun solidArrow(from: Actor, to: Actor, message: String,
+              activate: Boolean = false, deactivate: Boolean = false) =
+        SolidArrow(from, to, message, activate, deactivate)
+
+    fun solidCross(from: Actor, to: Actor, message: String,
+              activate: Boolean = false, deactivate: Boolean = false) =
+        SolidCross(from, to, message, activate, deactivate)
+
+    fun solidOpen(from: Actor, to: Actor, message: String,
+                  activate: Boolean = false, deactivate: Boolean = false) =
+        SolidOpen(from, to, message, activate, deactivate)
+
+    // Dotted Arrows ============
+
+    fun dottedLine(from: Actor, to: Actor, message: String,
+                 activate: Boolean = false, deactivate: Boolean = false) =
+        DottedLine(from, to, message, activate, deactivate)
+
+    fun dottedArrow(from: Actor, to: Actor, message: String,
+              activate: Boolean = false, deactivate: Boolean = false) =
+        DottedArrow(from, to, message, activate, deactivate)
+
+    fun dottedCross(from: Actor, to: Actor, message: String,
+              activate: Boolean = false, deactivate: Boolean = false) =
+        DottedCross(from, to, message, activate, deactivate)
+
+    fun dottedOpen(from: Actor, to: Actor, message: String,
+                  activate: Boolean = false, deactivate: Boolean = false) =
+        DottedOpen(from, to, message, activate, deactivate)
+
+    // Notes ============
+
+    fun noteLeft(actor: Actor, note: String) =
+        NoteLeft(actor, note)
+
+    fun noteRight(actor: Actor, note: String) =
+        NoteRight(actor, note)
+
+    fun noteOver(actor1: Actor, actor2: Actor, note: String) =
+        NoteOver(actor1, actor2, note)
+
+    fun noteOver(actor: Actor, note: String) =
+        NoteOver(actor, null, note)
+
+    // Blocks ============
+
+    fun loop(label: String, thenWhat: Loop.() -> Unit) =
+        initInductive(Loop(label), thenWhat)
+
+    fun highlight(colorString: String, thenWhat: Rect.() -> Unit) =
+        initInductive(Rect(Color.fromString(colorString)), thenWhat)
+
+    fun alternative(condition: String, thenWhat: Alternative.() -> Unit) =
+        initInductive(Alternative(condition), thenWhat)
+
+    fun parallel(description: String, thenWhat: Parallel.() -> Unit) =
+        initInductive(Parallel(description), thenWhat)
+
+    fun optional(description: String, thenWhat: Optional.() -> Unit) =
+        initInductive(Optional(description), thenWhat)
 }
 
 // ============ Blocks ============
 
-abstract class Block() : Inductive() {
-    fun loop(label: String, thenWhat: Loop.() -> Unit) = init(Loop(label), thenWhat)
-
-    fun noteLeft(actor: Actor, note: String, thenWhat: NoteLeft.() -> Unit) =
-        init(NoteLeft(actor, note), thenWhat)
-
-    fun noteRight(actor: Actor, note: String, thenWhat: NoteRight.() -> Unit) =
-        init(NoteRight(actor, note), thenWhat)
-
-    fun noteOver(actor1: Actor, actor2: Actor, note: String, thenWhat: NoteOver.() -> Unit) =
-        init(NoteOver(actor1, actor2, note), thenWhat)
-
-    fun noteOver(actor: Actor, note: String, thenWhat: NoteOver.() -> Unit) =
-        init(NoteOver(actor, null, note), thenWhat)
-
-    fun highlight(colorString: String, thenWhat: Rect.() -> Unit) =
-        init(Rect(Color.fromString(colorString)), thenWhat)
-
-    fun alternative(condition: String, thenWhat: Alternative.() -> Unit) =
-        init(Alternative(condition), thenWhat)
-
-    fun parallel(description: String, thenWhat: Parallel.() -> Unit) =
-        init(Parallel(description), thenWhat)
-
-    fun optional(description: String, thenWhat: Optional.() -> Unit) =
-        init(Optional(description), thenWhat)
-}
+abstract class Block() : Inductive() 
 
 class Loop(var label: String?) : Block() {
     override fun render(acc: StringBuilder) : StringBuilder {
@@ -315,7 +330,7 @@ class Rect(var color: Color?) : Block() {
 
 class Alternative(var condition: String?) : Block() {
     fun elseClause(condition: String?, thenWhat: ElseClause.() -> Unit) =
-        init(ElseClause(condition), thenWhat)
+        initInductive(ElseClause(condition), thenWhat)
 
     override fun render(acc: StringBuilder) : StringBuilder {
         acc.append("alt ")
@@ -332,7 +347,7 @@ class Alternative(var condition: String?) : Block() {
 
 class Parallel(var description: String?) : Block() {
     fun andClause(condition: String?, thenWhat: AndClause.() -> Unit) =
-        init(AndClause(condition), thenWhat)
+        initInductive(AndClause(condition), thenWhat)
 
     override fun render(acc: StringBuilder) : StringBuilder {
         acc.append("parallel ")
@@ -393,52 +408,27 @@ class AndClause(var condition: String?) : Clause() {
     }
 }
 
-// val sample = sequenceDiagram {
-    //     autonumber()
-    //     participants("alice", "bob", "john")
-    //
-    //     alternative("x=0") {
-        //         callSync("alice", "bob", "hihi")
-        //         replySync("bob", "alice", "hihi")
-        //         elseClause("x=1") {
-            //             callSync("alice", "bob", "hihi")
-            //             replySync("bob", "alice", "hihi")
-            //         }
-            //         elseClause("x=2") {
-                //             callSync("alice", "bob", "hihi")
-                //             replySync("bob", "alice", "hihi")
-                //         }
-                //         elseClause("x=3") {
-                    //             callSync("alice", "bob", "hihi")
-                    //             replySync("bob", "alice", "hihi")
-                    //         }
-                    //     }
-                    //
-                    //     callSync("alice", "bob", "hihi")
-                    //     noteOver("alice", "alice says hihi")
-                    //     callSync("bob", "john", "hoho")
-                    //     noteOver("bob", "john", "bob says hoho")
-                    //
-                    //     parallel("Alice to Bob") {
-                        //         callSync("alice", "bob", "hihi")
-                        //         andClause("Bob to John") {
-                            //             callSync("bob", "john", "hihi")
-                            //         }
-                            //         andClause("Alice to John") {
-                                //             callSync("alice", "john", "hihi")
-                                //         }
-                                //     }
-                                //
-                                //     highlight("red") {
-                                    //         optional("this is optional") {
-                                        //             callSync("alice", "bob", "hihi")
-                                        //             replySync("bob", "alice", "hihi")
-                                        //         }
-                                        //     }
-                                        // }
+/* ==================================== */
+/* ============ Main Class ============ */
+/* ==================================== */
 
-fun sequenceDiagram(diagram: Component): String {
+class SequenceDiagram() : Inductive() {
+    override fun render(acc: StringBuilder) : StringBuilder {
+        acc.append("sequenceDiagram")
+        acc.append("\n")
+        for (child in this.children) {
+            acc.append("    ")
+            child.render(acc)
+        }
+        return acc
+    }
+}
+
+fun sequenceDiagram(thenWhat: SequenceDiagram.() -> Unit): String {
+    val sequenceDiagram = SequenceDiagram()
+    val sequenceDiagram =
+        sequenceDiagram.initInductive(thenWhat)
     val builder = StringBuilder()
-    diagram.render(builder)
+    sequenceDiagram.render(builder)
     return builder.toString()
 }
