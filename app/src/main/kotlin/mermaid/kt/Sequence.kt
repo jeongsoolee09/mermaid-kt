@@ -4,8 +4,9 @@ class Unreachable() : Exception()
 
 /* ============ Components ============ */
 
-interface Component
-
+interface Component {
+    fun render(acc: StringBuilder) : StringBuilder
+}
 
 /* =================================== */
 /* ============ Base Case ============ */
@@ -17,7 +18,13 @@ abstract class Base : Component
 
 abstract class SubComponent : Base()
 
-data class Actor(val name: String) : SubComponent()
+class Actor(val name: String) : SubComponent() {
+    // Kotlin does not have type aliases... so ... *bites the bullet*
+    override fun toString() = this.name
+
+    override fun render(acc: StringBuilder) : StringBuilder =
+        acc.append(this.toString())
+}
 
 fun actor(name: String) = Actor(name)
 
@@ -31,9 +38,12 @@ class Color(val r: Int, val g: Int, val b: Int, val a: Float) : SubComponent() {
                 "yellow" -> Color(255, 255, 0, 0.5.toFloat())
                 "gray" -> Color(0, 0, 0, 0.1.toFloat())
                 else -> Color(0, 0, 0, 0.toFloat()) // fall back to black.
-                }
-        fun toString(color: Color): String = "rgb(${color.r}, ${color.g}, ${color.b}, ${color.a})"
+            }
+        fun toString(color: Color): String =
+            "rgb(${color.r}, ${color.g}, ${color.b}, ${color.a})"
     }
+    override fun render(acc: StringBuilder) : StringBuilder =
+        acc.append(this.toString())
 }
 
 // ============ Labels ============
@@ -49,20 +59,23 @@ abstract class Label() : Base() {
 }
 
 class Autonumber() : Label() {
-    override fun toString(): String = "autonumber"
+    override fun render(acc: StringBuilder): StringBuilder =
+        acc.append("autonumber")
 }
 
 class Participants(var participants: List<Actor>?) : Label() {
-    override fun toString(): String =
-        participants!!.joinToString(prefix="participants ", separator=", ")
+    override fun render(acc: StringBuilder): StringBuilder =
+        acc.append(participants!!.joinToString(prefix="participants ", separator=", "))
 }
 
 class Activate(var actor: Actor?) : Label() {
-    override fun toString(): String = "activate " + actor.toString()
+    override fun render(acc: StringBuilder): StringBuilder =
+        acc.append("activate " + actor.toString())
 }
 
 class Deactivate(var actor: Actor?) : Label() {
-    override fun toString(): String = "deactivate " + actor.toString()
+    override fun render(acc: StringBuilder): StringBuilder =
+        acc.append("deactivate " + actor.toString())
 }
 
 // ============ Calls ============
@@ -89,11 +102,11 @@ abstract class Solid() : Arrow() {
 
 class SolidLine(var from: Actor?, var to: Actor?, var message: String?,
                 val activate: Boolean = false, val deactivate: Boolean = false): Solid() {
-    override fun toString() : String =
+    override fun render(acc: StringBuilder) : StringBuilder =
         when(Pair(this.activate, this.deactivate)) {
-            Pair(false, false) -> "${this.from}->${this.to}: ${this.message}"
-            Pair(true, false)  -> "${this.from}->+${this.to}: ${this.message}"
-            Pair(false, true)  -> "${this.from}->-${this.to}: ${this.message}"
+            Pair(false, false) -> acc.append("${this.from}->${this.to}: ${this.message}")
+            Pair(true, false)  -> acc.append("${this.from}->+${this.to}: ${this.message}")
+            Pair(false, true)  -> acc.append("${this.from}->-${this.to}: ${this.message}")
             Pair(true, true)   ->
                 throw IllegalArgumentException("Cannot be both activate and deactivate receiver at the same time")
             else -> throw Unreachable()
@@ -103,11 +116,11 @@ class SolidLine(var from: Actor?, var to: Actor?, var message: String?,
 
 class SolidArrow(var from: Actor?, var to: Actor?, var message: String?,
                  val activate: Boolean = false, val deactivate: Boolean = false): Solid() {
-    override fun toString() : String =
+    override fun render(acc: StringBuilder) : StringBuilder =
         when(Pair(this.activate, this.deactivate)) {
-            Pair(false, false) -> "${this.from}->>${this.to}: ${this.message}"
-            Pair(true, false)  -> "${this.from}->>+${this.to}: ${this.message}"
-            Pair(false, true)  -> "${this.from}->>-${this.to}: ${this.message}"
+            Pair(false, false) -> acc.append("${this.from}->>${this.to}: ${this.message}")
+            Pair(true, false)  -> acc.append("${this.from}->>+${this.to}: ${this.message}")
+            Pair(false, true)  -> acc.append("${this.from}->>-${this.to}: ${this.message}")
             Pair(true, true)   ->
                 throw IllegalArgumentException("Cannot be both activate and deactivate receiver at the same time")
             else -> throw Unreachable()
@@ -116,11 +129,11 @@ class SolidArrow(var from: Actor?, var to: Actor?, var message: String?,
 
 class SolidCross(var from: Actor?, var to: Actor?, var message: String?,
                  val activate: Boolean = false, val deactivate: Boolean = false): Solid() {
-    override fun toString() : String =
+    override fun render(acc: StringBuilder) : StringBuilder =
         when(Pair(this.activate, this.deactivate)) {
-            Pair(false, false) -> "${this.from}-x${this.to}: ${this.message}"
-            Pair(true, false)  -> "${this.from}-x+${this.to}: ${this.message}"
-            Pair(false, true)  -> "${this.from}-x-${this.to}: ${this.message}"
+            Pair(false, false) -> acc.append("${this.from}-x${this.to}: ${this.message}")
+            Pair(true, false)  -> acc.append("${this.from}-x+${this.to}: ${this.message}")
+            Pair(false, true)  -> acc.append("${this.from}-x-${this.to}: ${this.message}")
             Pair(true, true)   ->
                 throw IllegalArgumentException("Cannot be both activate and deactivate receiver at the same time")
             else -> throw Unreachable()
@@ -129,11 +142,11 @@ class SolidCross(var from: Actor?, var to: Actor?, var message: String?,
 
 class SolidOpen(var from: Actor?, var to: Actor?, var message: String?,
                 val activate: Boolean = false, val deactivate: Boolean = false): Solid() {
-    override fun toString() : String =
+    override fun render(acc: StringBuilder) : StringBuilder =
         when(Pair(this.activate, this.deactivate)) {
-            Pair(false, false) -> "${this.from}-)${this.to}: ${this.message}"
-            Pair(true, false)  -> "${this.from}-)+${this.to}: ${this.message}"
-            Pair(false, true)  -> "${this.from}-)-${this.to}: ${this.message}"
+            Pair(false, false) -> acc.append("${this.from}-)${this.to}: ${this.message}")
+            Pair(true, false)  -> acc.append("${this.from}-)+${this.to}: ${this.message}")
+            Pair(false, true)  -> acc.append("${this.from}-)-${this.to}: ${this.message}")
             Pair(true, true)   ->
                 throw IllegalArgumentException("Cannot be both activate and deactivate receiver at the same time")
             else -> throw Unreachable()
@@ -160,11 +173,11 @@ abstract class Dotted() : Arrow() {
 
 class DottedLine(var from: Actor?, var to: Actor?, var message: String?,
                  val activate: Boolean = false, val deactivate: Boolean = false): Dotted() {
-    override fun toString() : String =
+    override fun render(acc: StringBuilder) : StringBuilder =
         when(Pair(this.activate, this.deactivate)) {
-            Pair(false, false) -> "${this.from}-->${this.to}: ${this.message}"
-            Pair(true, false)  -> "${this.from}-->+${this.to}: ${this.message}"
-            Pair(false, true)  -> "${this.from}-->-${this.to}: ${this.message}"
+            Pair(false, false) -> acc.append("${this.from}-->${this.to}: ${this.message}")
+            Pair(true, false)  -> acc.append("${this.from}-->+${this.to}: ${this.message}")
+            Pair(false, true)  -> acc.append("${this.from}-->-${this.to}: ${this.message}")
             Pair(true, true)   ->
                 throw IllegalArgumentException("Cannot be both activate and deactivate receiver at the same time")
             else -> throw Unreachable()
@@ -174,11 +187,11 @@ class DottedLine(var from: Actor?, var to: Actor?, var message: String?,
 
 class DottedArrow(var from: Actor?, var to: Actor?, var message: String?,
                   val activate: Boolean = false, val deactivate: Boolean = false): Dotted() {
-    override fun toString() : String =
+    override fun render(acc: StringBuilder) : StringBuilder =
         when(Pair(this.activate, this.deactivate)) {
-            Pair(false, false) -> "${this.from}-->>${this.to}: ${this.message}"
-            Pair(true, false)  -> "${this.from}-->>+${this.to}: ${this.message}"
-            Pair(false, true)  -> "${this.from}-->>-${this.to}: ${this.message}"
+            Pair(false, false) -> acc.append("${this.from}-->>${this.to}: ${this.message}")
+            Pair(true, false)  -> acc.append("${this.from}-->>+${this.to}: ${this.message}")
+            Pair(false, true)  -> acc.append("${this.from}-->>-${this.to}: ${this.message}")
             Pair(true, true)   ->
                 throw IllegalArgumentException("Cannot be both activate and deactivate receiver at the same time")
             else -> throw Unreachable()
@@ -188,11 +201,11 @@ class DottedArrow(var from: Actor?, var to: Actor?, var message: String?,
 
 class DottedCross(var from: Actor?, var to: Actor?, var message: String?,
                   val activate: Boolean = false, val deactivate: Boolean = false): Dotted() {
-    override fun toString() : String =
+    override fun render(acc: StringBuilder) : StringBuilder =
         when(Pair(this.activate, this.deactivate)) {
-            Pair(false, false) -> "${this.from}--x${this.to}: ${this.message}"
-            Pair(true, false)  -> "${this.from}--x+${this.to}: ${this.message}"
-            Pair(false, true)  -> "${this.from}--x-${this.to}: ${this.message}"
+            Pair(false, false) -> acc.append("${this.from}--x${this.to}: ${this.message}")
+            Pair(true, false)  -> acc.append("${this.from}--x+${this.to}: ${this.message}")
+            Pair(false, true)  -> acc.append("${this.from}--x-${this.to}: ${this.message}")
             Pair(true, true)   ->
                 throw IllegalArgumentException("Cannot be both activate and deactivate receiver at the same time")
             else -> throw Unreachable()
@@ -202,11 +215,11 @@ class DottedCross(var from: Actor?, var to: Actor?, var message: String?,
 
 class DottedOpen(var from: Actor?, var to: Actor?, var message: String?,
                  val activate: Boolean = false, val deactivate: Boolean = false): Dotted() {
-    override fun toString() : String =
+    override fun render(acc: StringBuilder) : StringBuilder =
         when(Pair(this.activate, this.deactivate)) {
-            Pair(false, false) -> "${this.from}--)${this.to}: ${this.message}"
-            Pair(true, false)  -> "${this.from}--)+${this.to}: ${this.message}"
-            Pair(false, true)  -> "${this.from}--)-${this.to}: ${this.message}"
+            Pair(false, false) -> acc.append("${this.from}--)${this.to}: ${this.message}")
+            Pair(true, false)  -> acc.append("${this.from}--)+${this.to}: ${this.message}")
+            Pair(false, true)  -> acc.append("${this.from}--)-${this.to}: ${this.message}")
             Pair(true, true)   ->
                 throw IllegalArgumentException("Cannot be both activate and deactivate receiver at the same time")
             else -> throw Unreachable()
@@ -214,16 +227,19 @@ class DottedOpen(var from: Actor?, var to: Actor?, var message: String?,
 }
 
 class NoteLeft(var actor: Actor?, var note: String?) : Block() {
-    override fun toString() = "Note left of ${this.actor}"
+    override fun render(acc: StringBuilder) : StringBuilder =
+        acc.append("Note left of ${this.actor}")
 }
 
 class NoteRight(var actor: Actor?, var note: String?) : Block() {
-    override fun toString() = "Note right of ${this.actor}"
+    override fun render(acc: StringBuilder) : StringBuilder =
+        acc.append("Note right of ${this.actor}")
 }
 
 class NoteOver(var actor1: Actor?, var actor2: Actor?, var note: String?) : Block() {
-    override fun toString() =
-        if (this.actor2 != null) "Note over ${actor1},${actor2}: $note" else "Note over ${actor1}: $note"
+    override fun render(acc: StringBuilder) : StringBuilder =
+        acc.append(if (this.actor2 != null) "Note over ${actor1},${actor2}: $note"
+                   else "Note over ${actor1}: $note")
 }
 
 /* ======================================== */
@@ -271,32 +287,30 @@ abstract class Block() : Inductive() {
 }
 
 class Loop(var label: String?) : Block() {
-    override fun toString() : String {
-        val builder = StringBuilder()
-        builder.append("loop ")
-        builder.append(this.label)
-        builder.append("\n")
+    override fun render(acc: StringBuilder) : StringBuilder {
+        acc.append("loop ")
+        acc.append(this.label)
+        acc.append("\n")
         for (child in this.children) {
-            builder.append("    ")
-            builder.append(child.toString())
+            acc.append("    ")
+            acc.append(child.render(acc))
         }
-        builder.append("end")
-        return builder.toString()
+        acc.append("end")
+        return acc
     }
 }
 
 class Rect(var color: Color?) : Block() {
-    override fun toString() : String {
-        val builder = StringBuilder()
-        builder.append("rect ")
-        builder.append(this.color.toString())
-        builder.append("\n")
+    override fun render(acc: StringBuilder) : StringBuilder {
+        acc.append("rect ")
+        acc.append(this.color.toString())
+        acc.append("\n")
         for (child in this.children) {
-            builder.append("    ")
-            builder.append(child.toString())
+            acc.append("    ")
+            acc.append(child.render(acc))
         }
-        builder.append("end")
-        return builder.toString()
+        acc.append("end")
+        return acc
     }
 }
 
@@ -304,18 +318,16 @@ class Alternative(var condition: String?) : Block() {
     fun elseClause(condition: String?, thenWhat: ElseClause.() -> Unit) =
         init(ElseClause(condition), thenWhat)
 
-    override fun toString() : String {
-        // TODO
-        val builder = StringBuilder()
-        builder.append("rect ")
-        builder.append(this.color.toString())
-        builder.append("\n")
+    override fun render(acc: StringBuilder) : StringBuilder {
+        acc.append("alt ")
+        acc.append(this.condition)
+        acc.append("\n")
         for (child in this.children) {
-            builder.append("    ")
-            builder.append(child.toString())
+            acc.append("    ")
+            acc.append(child.render(acc))
         }
-        builder.append("end")
-        return builder.toString()
+        acc.append("end")
+        return acc
     }
 }
 
@@ -323,34 +335,30 @@ class Parallel(var description: String?) : Block() {
     fun andClause(condition: String?, thenWhat: AndClause.() -> Unit) =
         init(AndClause(condition), thenWhat)
 
-    override fun toString() : String {
-        // TODO
-        val builder = StringBuilder()
-        builder.append("rect ")
-        builder.append(this.color.toString())
-        builder.append("\n")
+    override fun render(acc: StringBuilder) : StringBuilder {
+        acc.append("parallel ")
+        acc.append(this.description)
+        acc.append("\n")
         for (child in this.children) {
-            builder.append("    ")
-            builder.append(child.toString())
+            acc.append("    ")
+            acc.append(child.render(acc))
         }
-        builder.append("end")
-        return builder.toString()
+        acc.append("end")
+        return acc
     }
 }
 
 class Optional(var description: String?) : Block() {
-    override fun toString() : String {
-        // TODO
-        val builder = StringBuilder()
-        builder.append("rect ")
-        builder.append(this.color.toString())
-        builder.append("\n")
+    override fun render(acc: StringBuilder) : StringBuilder {
+        acc.append("rect ")
+        acc.append(this.description)
+        acc.append("\n")
         for (child in this.children) {
-            builder.append("    ")
-            builder.append(child.toString())
+            acc.append("    ")
+            acc.append(child.render(acc))
         }
-        builder.append("end")
-        return builder.toString()
+        acc.append("end")
+        return acc
     }
 }
 
@@ -359,11 +367,11 @@ class Optional(var description: String?) : Block() {
 abstract class Clause() : Inductive()
 
 class ElseClause(var condition: String?) : Clause() {
-    override fun toString() : String = TODO()
+    override fun render(acc: StringBuilder) : StringBuilder = TODO()
 }
 
 class AndClause(var condition: String?) : Clause() {
-    override fun toString() : String = TODO()
+    override fun render(acc: StringBuilder) : StringBuilder = TODO()
 }
 
 // val sample = sequenceDiagram {
