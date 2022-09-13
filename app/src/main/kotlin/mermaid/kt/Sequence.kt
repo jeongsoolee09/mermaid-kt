@@ -19,7 +19,6 @@ abstract class Base : Component
 abstract class SubComponent : Base()
 
 class Actor(val name: String) : SubComponent() {
-    // Kotlin does not have type aliases... so ... *bites the bullet*
     override fun toString() = this.name
 
     override fun render(acc: StringBuilder) : StringBuilder =
@@ -438,4 +437,8 @@ class AndClause(var condition: String?) : Clause() {
                                         //     }
                                         // }
 
-fun sequenceDiagram(diagram: Component): String = TODO()
+fun sequenceDiagram(diagram: Component): String {
+    val builder = StringBuilder()
+    diagram.render(builder)
+    return builder.toString()
+}
