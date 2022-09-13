@@ -293,7 +293,7 @@ class Loop(var label: String?) : Block() {
         acc.append("\n")
         for (child in this.children) {
             acc.append("    ")
-            acc.append(child.render(acc))
+            child.render(acc)
         }
         acc.append("end")
         return acc
@@ -307,7 +307,7 @@ class Rect(var color: Color?) : Block() {
         acc.append("\n")
         for (child in this.children) {
             acc.append("    ")
-            acc.append(child.render(acc))
+            child.render(acc)
         }
         acc.append("end")
         return acc
@@ -324,7 +324,7 @@ class Alternative(var condition: String?) : Block() {
         acc.append("\n")
         for (child in this.children) {
             acc.append("    ")
-            acc.append(child.render(acc))
+            child.render(acc)
         }
         acc.append("end")
         return acc
@@ -341,7 +341,7 @@ class Parallel(var description: String?) : Block() {
         acc.append("\n")
         for (child in this.children) {
             acc.append("    ")
-            acc.append(child.render(acc))
+            child.render(acc)
         }
         acc.append("end")
         return acc
@@ -350,12 +350,12 @@ class Parallel(var description: String?) : Block() {
 
 class Optional(var description: String?) : Block() {
     override fun render(acc: StringBuilder) : StringBuilder {
-        acc.append("rect ")
+        acc.append("opt ")
         acc.append(this.description)
         acc.append("\n")
         for (child in this.children) {
             acc.append("    ")
-            acc.append(child.render(acc))
+            child.render(acc)
         }
         acc.append("end")
         return acc
@@ -367,11 +367,31 @@ class Optional(var description: String?) : Block() {
 abstract class Clause() : Inductive()
 
 class ElseClause(var condition: String?) : Clause() {
-    override fun render(acc: StringBuilder) : StringBuilder = TODO()
+    override fun render(acc: StringBuilder) : StringBuilder {
+        acc.append("else ")
+        acc.append(this.condition)
+        acc.append("\n")
+        for (child in this.children) {
+            acc.append("    ")
+            child.render(acc)
+        }
+        acc.append("end")
+        return acc
+    }
 }
 
 class AndClause(var condition: String?) : Clause() {
-    override fun render(acc: StringBuilder) : StringBuilder = TODO()
+    override fun render(acc: StringBuilder) : StringBuilder {
+        acc.append("and ")
+        acc.append(this.condition)
+        acc.append("\n")
+        for (child in this.children) {
+            acc.append("    ")
+            child.render(acc)
+        }
+        acc.append("end")
+        return acc
+    }
 }
 
 // val sample = sequenceDiagram {
