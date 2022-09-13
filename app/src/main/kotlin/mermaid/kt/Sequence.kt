@@ -231,7 +231,7 @@ class NoteOver(var actor1: Actor?, var actor2: Actor?, var note: String?) : Bloc
 /* ======================================== */
 
 abstract class Inductive : Component {
-    val children = arrayListOf<Inductive>()
+    val children = arrayListOf<Component>()
 
     fun <T : Inductive> init(component: T, thenWhat: T.() -> Unit): T {
         component.thenWhat()
@@ -257,8 +257,8 @@ abstract class Block() : Inductive() {
     fun noteOver(actor: Actor, note: String, thenWhat: NoteOver.() -> Unit) =
         init(NoteOver(actor, null, note), thenWhat)
 
-    fun highlight(colorString: String, thenWhat: Highlight.() -> Unit) =
-        init(Highlight(Color.fromString(colorString)), thenWhat)
+    fun highlight(colorString: String, thenWhat: Rect.() -> Unit) =
+        init(Rect(Color.fromString(colorString)), thenWhat)
 
     fun alternative(condition: String, thenWhat: Alternative.() -> Unit) =
         init(Alternative(condition), thenWhat)
@@ -271,29 +271,87 @@ abstract class Block() : Inductive() {
 }
 
 class Loop(var label: String?) : Block() {
-    override fun toString() = TODO()
+    override fun toString() : String {
+        val builder = StringBuilder()
+        builder.append("loop ")
+        builder.append(this.label)
+        builder.append("\n")
+        for (child in this.children) {
+            builder.append("    ")
+            builder.append(child.toString())
+        }
+        builder.append("end")
+        return builder.toString()
+    }
 }
 
-class Highlight(var color: Color?) : Block() {
-    override fun toString() = TODO()
+class Rect(var color: Color?) : Block() {
+    override fun toString() : String {
+        val builder = StringBuilder()
+        builder.append("rect ")
+        builder.append(this.color.toString())
+        builder.append("\n")
+        for (child in this.children) {
+            builder.append("    ")
+            builder.append(child.toString())
+        }
+        builder.append("end")
+        return builder.toString()
+    }
 }
 
 class Alternative(var condition: String?) : Block() {
     fun elseClause(condition: String?, thenWhat: ElseClause.() -> Unit) =
         init(ElseClause(condition), thenWhat)
 
-    override fun toString() = TODO()
+    override fun toString() : String {
+        // TODO
+        val builder = StringBuilder()
+        builder.append("rect ")
+        builder.append(this.color.toString())
+        builder.append("\n")
+        for (child in this.children) {
+            builder.append("    ")
+            builder.append(child.toString())
+        }
+        builder.append("end")
+        return builder.toString()
+    }
 }
 
 class Parallel(var description: String?) : Block() {
     fun andClause(condition: String?, thenWhat: AndClause.() -> Unit) =
         init(AndClause(condition), thenWhat)
 
-    override fun toString() = TODO()
+    override fun toString() : String {
+        // TODO
+        val builder = StringBuilder()
+        builder.append("rect ")
+        builder.append(this.color.toString())
+        builder.append("\n")
+        for (child in this.children) {
+            builder.append("    ")
+            builder.append(child.toString())
+        }
+        builder.append("end")
+        return builder.toString()
+    }
 }
 
 class Optional(var description: String?) : Block() {
-    override fun toString() = TODO()
+    override fun toString() : String {
+        // TODO
+        val builder = StringBuilder()
+        builder.append("rect ")
+        builder.append(this.color.toString())
+        builder.append("\n")
+        for (child in this.children) {
+            builder.append("    ")
+            builder.append(child.toString())
+        }
+        builder.append("end")
+        return builder.toString()
+    }
 }
 
 // ============ Clauses ============
@@ -301,11 +359,11 @@ class Optional(var description: String?) : Block() {
 abstract class Clause() : Inductive()
 
 class ElseClause(var condition: String?) : Clause() {
-    override fun toString() = TODO()
+    override fun toString() : String = TODO()
 }
 
 class AndClause(var condition: String?) : Clause() {
-    override fun toString() = TODO()
+    override fun toString() : String = TODO()
 }
 
 // val sample = sequenceDiagram {
