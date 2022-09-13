@@ -1,7 +1,9 @@
+package mermaid.kt
+
 import mermaid.kt.Sequence.*
 
-class App()
-
 fun main() {
-    println("hihi")
+    val sd = sequenceDiagram {
+        noteLeft(Actor("john"), "Text in note")
+    }
 }
