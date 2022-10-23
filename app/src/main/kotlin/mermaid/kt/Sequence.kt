@@ -294,8 +294,8 @@ abstract class Inductive : Component {
     fun loop(label: String, thenWhat: Loop.() -> Unit) =
         initComponent(Loop(label), thenWhat)
 
-    fun highlight(colorString: String, thenWhat: Rect.() -> Unit) =
-        initComponent(Rect(Color.fromString(colorString)), thenWhat)
+    fun highlight(colorString: String, thenWhat: Highlight.() -> Unit) =
+        initComponent(Highlight(Color.fromString(colorString)), thenWhat)
 
     fun alternative(condition: String, thenWhat: Alternative.() -> Unit) =
         initComponent(Alternative(condition), thenWhat)
@@ -325,7 +325,7 @@ class Loop(var label: String?) : Block() {
     }
 }
 
-class Rect(var color: Color?) : Block() {
+class Highlight(var color: Color?) : Block() {
     override fun render(acc: StringBuilder) : StringBuilder {
         acc.append("rect ")
         acc.append(this.color.toString())
