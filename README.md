@@ -35,6 +35,8 @@ val example1 = sequenceDiagram {
 }
 ```
 
+The above translates to:
+
 ```mermaid
 sequenceDiagram
     loop until dead
