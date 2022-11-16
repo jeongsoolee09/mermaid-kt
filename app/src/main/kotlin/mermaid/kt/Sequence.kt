@@ -230,7 +230,7 @@ abstract class Inductive : Component {
     fun autonumber() =
         initComponent(Autonumber())
 
-    fun participants(participants: List<Actor>) =
+    fun participants(vararg participants: Actor) =
         initComponent(Participants(participants))
 
     fun activate(actor: Actor) =
