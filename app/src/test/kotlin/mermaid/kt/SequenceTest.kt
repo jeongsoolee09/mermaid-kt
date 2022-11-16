@@ -6,7 +6,7 @@ import mermaid.kt.Sequence.*
 
 private val sample = sequenceDiagram {
     autonumber()
-    participants(listOf(Actor("alice"), Actor("bob"), Actor("john")))
+    participants(Actor("alice"), Actor("bob"), Actor("john"))
 
     alternative("x=0") {
         solidArrow(Actor("alice"), Actor("bob"), "hihi")
